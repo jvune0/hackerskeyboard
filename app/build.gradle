@@ -8,13 +8,28 @@ android {
         applicationId = 'org.pocketworkstation.pckeyboard.deadkeys'
         minSdk = 21
         targetSdk = 26
-        versionCode = 1041001
-        versionName = "v1.41.1"
+        // The release workflow sets these from the tag and its run number.
+        versionCode = 1041001 + (System.getenv('RELEASE_RUN_NUMBER') ?: '0').toInteger()
+        versionName = System.getenv('RELEASE_VERSION_NAME') ?: "v1.41.1"
+    }
+    signingConfigs {
+        // The release workflow provides the keystore; otherwise release builds are unsigned.
+        release {
+            if (System.getenv('KEYSTORE_FILE')) {
+                storeFile = file(System.getenv('KEYSTORE_FILE'))
+                storePassword = System.getenv('KEYSTORE_PASSWORD')
+                keyAlias = System.getenv('KEY_ALIAS')
+                keyPassword = System.getenv('KEY_PASSWORD')
+            }
+        }
     }
     buildTypes {
         release {
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (System.getenv('KEYSTORE_FILE')) {
+                signingConfig = signingConfigs.release
+            }
         }
     }
     externalNativeBuild {
