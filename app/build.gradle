@@ -1,38 +1,33 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
+    namespace = 'org.pocketworkstation.pckeyboard'
+    compileSdk = 36
+    ndkVersion = '28.2.13676358'
     defaultConfig {
-        applicationId 'org.pocketworkstation.pckeyboard'
-        minSdkVersion 14
-        targetSdkVersion 26
-        versionCode 1041001
-        versionName "v1.41.1"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                cppFlags ""
-            }
-        }
+        applicationId = 'org.pocketworkstation.pckeyboard'
+        minSdk = 21
+        targetSdk = 26
+        versionCode = 1041001
+        versionName = "v1.41.1"
     }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
     externalNativeBuild {
         cmake {
-            path "CMakeLists.txt"
+            path = file("CMakeLists.txt")
+            version = "3.31.5"
         }
     }
-    productFlavors {
-    }
-    lintOptions {
-        checkReleaseBuilds false
+    lint {
+        checkReleaseBuilds = false
         // Or, if you prefer, you can continue to check for errors in release builds,
         // but continue the build even when errors are found:
-        //abortOnError false
+        //abortOnError = false
     }
 }
 
@@ -40,7 +35,5 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation "com.android.support:support-compat:26.0.0"
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    testImplementation 'junit:junit:4.13.2'
 }
