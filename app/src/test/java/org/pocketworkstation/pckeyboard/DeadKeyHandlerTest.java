@@ -35,7 +35,9 @@ public class DeadKeyHandlerTest {
     private static final int KEYCODE_FORWARD_DEL = 112;
 
     private static final int SHIFT = DeadKeyHandler.MOD_SHIFT;
-    private static final int ALT = DeadKeyHandler.MOD_ALT;
+    /** Right Alt, the dead-key modifier. */
+    private static final int ALT = DeadKeyHandler.MOD_ALT_RIGHT;
+    private static final int LEFT_ALT = DeadKeyHandler.MOD_ALT_LEFT;
     private static final int CTRL = DeadKeyHandler.MOD_CTRL;
     private static final int META = DeadKeyHandler.MOD_META;
 
@@ -343,6 +345,7 @@ public class DeadKeyHandlerTest {
         assertEquals(Result.PASS, key(DeadKeyHandler.KEYCODE_SHIFT_LEFT, 0, SHIFT));
         assertEquals(Result.PASS, handler.onKeyUp(DeadKeyHandler.KEYCODE_SHIFT_LEFT));
         assertEquals(Result.PASS, key(DeadKeyHandler.KEYCODE_ALT_RIGHT, 0, ALT));
+        assertEquals(Result.PASS, key(DeadKeyHandler.KEYCODE_ALT_LEFT, 0, LEFT_ALT));
         assertEquals(Result.PASS, key(DeadKeyHandler.KEYCODE_CTRL_LEFT, 0, CTRL));
         assertEquals(Result.PASS, key(DeadKeyHandler.KEYCODE_CAPS_LOCK, 0, 0));
         assertEquals(Result.PASS, key(DeadKeyHandler.KEYCODE_META_LEFT, 0, META));
@@ -388,6 +391,40 @@ public class DeadKeyHandlerTest {
         letter('e', ALT);
         assertEquals(commitThenPass("´"), space(CTRL));
         assertEquals(Result.PASS, handler.onKeyUp(DeadKeyHandler.KEYCODE_SPACE));
+    }
+
+    // Left Alt
+
+    @Test
+    public void leftAlt_passesThrough() {
+        assertEquals(Result.PASS, letter('u', LEFT_ALT));
+        assertEquals(Result.PASS, letter('e', LEFT_ALT));
+        assertEquals(Result.PASS, letter('i', LEFT_ALT | SHIFT));
+        assertEquals(Result.PASS, letter('n', LEFT_ALT));
+        assertEquals(Result.PASS, letter('c', LEFT_ALT));
+        assertEquals(Result.PASS, letter('c', LEFT_ALT | SHIFT));
+        assertEquals(Result.PASS, letter('s', LEFT_ALT));
+        assertEquals(Result.PASS, grave(LEFT_ALT));
+        assertEquals(Result.PASS, grave(LEFT_ALT | SHIFT));
+        assertEquals(Result.PASS, six(LEFT_ALT | SHIFT));
+        assertFalse(handler.hasPendingAccent());
+        assertEquals(Result.PASS, handler.onKeyUp(keyCodeOf('u')));
+    }
+
+    @Test
+    public void bothAlts_passThrough() {
+        assertEquals(Result.PASS, letter('u', ALT | LEFT_ALT));
+        assertEquals(Result.PASS, letter('s', ALT | LEFT_ALT));
+        assertEquals(Result.PASS, grave(ALT | LEFT_ALT | SHIFT));
+        assertFalse(handler.hasPendingAccent());
+    }
+
+    @Test
+    public void leftAltShortcutWhilePending_commitsSpacingAccentThenPasses() {
+        letter('u', ALT);
+        assertEquals(commitThenPass("¨"), letter('b', LEFT_ALT));
+        assertFalse(handler.hasPendingAccent());
+        assertEquals(Result.PASS, handler.onKeyUp(keyCodeOf('b')));
     }
 
     // Key-up and auto-repeat

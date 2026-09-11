@@ -25,8 +25,9 @@ import java.util.Set;
  * passes only events from physical keyboards, extracts the key code, characters
  * and modifiers from the {@code KeyEvent}, and applies the returned {@link Result}.
  *
- * <p>Combinations are matched by the key's base character in the current layout,
- * so they only apply to Latin layouts:
+ * <p>The dead-key modifier is right Alt; left Alt is a shortcut modifier like Ctrl
+ * and Meta. Combinations are matched by the key's base character in the current
+ * layout, so they only apply to Latin layouts:
  * <ul>
  * <li>Alt+U: dead diaeresis (U+0308)
  * <li>Alt+E: dead acute (U+0301)
@@ -41,9 +42,12 @@ import java.util.Set;
 public final class DeadKeyHandler {
 
     public static final int MOD_SHIFT = 1;
-    public static final int MOD_ALT = 1 << 1;
-    public static final int MOD_CTRL = 1 << 2;
-    public static final int MOD_META = 1 << 3;
+    /** Right Alt: the dead-key modifier. */
+    public static final int MOD_ALT_RIGHT = 1 << 1;
+    /** Left Alt: a shortcut modifier, like Ctrl and Meta. */
+    public static final int MOD_ALT_LEFT = 1 << 2;
+    public static final int MOD_CTRL = 1 << 3;
+    public static final int MOD_META = 1 << 4;
 
     // Same values as android.view.KeyEvent.KEYCODE_*.
     static final int KEYCODE_ALT_LEFT = 57;
@@ -169,9 +173,9 @@ public final class DeadKeyHandler {
             return Result.PASS;
         }
         boolean shift = (modifiers & MOD_SHIFT) != 0;
-        boolean ctrlOrMeta = (modifiers & (MOD_CTRL | MOD_META)) != 0;
+        boolean shortcut = (modifiers & (MOD_ALT_LEFT | MOD_CTRL | MOD_META)) != 0;
 
-        if ((modifiers & MOD_ALT) != 0 && !ctrlOrMeta) {
+        if ((modifiers & MOD_ALT_RIGHT) != 0 && !shortcut) {
             char accent = deadAccentFor(baseChar, shift);
             if (accent != 0) {
                 String previous = takePendingSpacing();
@@ -191,7 +195,7 @@ public final class DeadKeyHandler {
             mPendingAccent = 0;
             return Result.CONSUME;
         }
-        if (ctrlOrMeta) {
+        if (shortcut) {
             return Result.commitThenPass(takePendingSpacing());
         }
         if (keyCode == KEYCODE_SPACE || unicodeChar == ' ') {

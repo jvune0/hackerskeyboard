@@ -19,7 +19,7 @@ Fork [Hacker's Keyboard](https://github.com/klausw/hackerskeyboard) (Apache 2.0)
 
 ## Behavior
 
-"Alt" means either Alt key; both must work.
+"Alt" means the right Alt key only. Left Alt is an ordinary shortcut modifier (like Ctrl and Meta) and is never used for dead keys.
 
 | Combination | Result |
 |---|---|
@@ -36,7 +36,7 @@ Fork [Hacker's Keyboard](https://github.com/klausw/hackerskeyboard) (Apache 2.0)
 Rules:
 
 1. Only handle events from a physical keyboard: `(event.getSource() & InputDevice.SOURCE_KEYBOARD) != 0` and the device is not virtual (`InputDevice.getDevice(id)` is non-null and `!isVirtual()`). Everything else follows the existing code path.
-2. Intercept a combination only if Alt is pressed, Ctrl and Meta are not, and the key's base character in the current layout is Latin (`event.getUnicodeChar(0)` in `a..z`, or `` ` `` / `6` for those keys). With a Cyrillic layout everything passes through, so Russian's right-Alt Latin letters keep working.
+2. Intercept a combination only if right Alt is pressed and left Alt, Ctrl and Meta are not, and the key's base character in the current layout is Latin (`event.getUnicodeChar(0)` in `a..z`, or `` ` `` / `6` for those keys). With a Cyrillic layout everything passes through, so Russian's right-Alt Latin letters keep working.
 3. An intercepted press is consumed completely: keyDown (including auto-repeat) and the matching keyUp. Track consumed key codes.
 4. After a dead key, the next printable press is consumed too:
    - get the character honoring Shift/Caps Lock: `event.getUnicodeChar(metaState with Alt bits cleared)`;

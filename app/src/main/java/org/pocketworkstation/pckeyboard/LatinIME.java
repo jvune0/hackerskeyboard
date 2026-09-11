@@ -1291,7 +1291,9 @@ public class LatinIME extends InputMethodService implements
     private static int deadKeyModifiers(KeyEvent event) {
         int modifiers = 0;
         if (event.isShiftPressed()) modifiers |= DeadKeyHandler.MOD_SHIFT;
-        if (event.isAltPressed()) modifiers |= DeadKeyHandler.MOD_ALT;
+        int metaState = event.getMetaState();
+        if ((metaState & KeyEvent.META_ALT_RIGHT_ON) != 0) modifiers |= DeadKeyHandler.MOD_ALT_RIGHT;
+        if ((metaState & KeyEvent.META_ALT_LEFT_ON) != 0) modifiers |= DeadKeyHandler.MOD_ALT_LEFT;
         if (event.isCtrlPressed()) modifiers |= DeadKeyHandler.MOD_CTRL;
         if (event.isMetaPressed()) modifiers |= DeadKeyHandler.MOD_META;
         return modifiers;

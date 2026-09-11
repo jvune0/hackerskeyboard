@@ -1,18 +1,18 @@
 # Hacker's Keyboard (Dead Keys)
 
-A fork of [Hacker's Keyboard](https://github.com/klausw/hackerskeyboard) that adds **Alt dead keys for physical (Bluetooth or USB) keyboards**: Alt+U then a types ä, Alt+E then e types é, Alt+S types ß. The on-screen keyboard and everything else work as in the original. The original README follows [below](#overview).
+A fork of [Hacker's Keyboard](https://github.com/klausw/hackerskeyboard) that adds **right Alt dead keys for physical (Bluetooth or USB) keyboards**: right Alt+U then a types ä, right Alt+E then e types é, right Alt+S types ß. The on-screen keyboard and everything else work as in the original. The original README follows [below](#overview).
 
 ## Why
 
 On a Huawei MatePad with HarmonyOS 4.3, the physical keyboard layout list always contains a built-in **Auto** layout. With the system language set to English, Auto is the AOSP English (US) layout, which has no Alt characters: Alt+S types a plain `s`. Auto can't be removed from the Ctrl+Space cycle, and system layouts can't be changed without root.
 
-A keyboard app sees hardware key events before the text field does, so this fork provides the Alt combinations itself. It only acts on keys from real physical keyboards, and only when the current layout gives Latin letters. Everything else passes through unchanged: Russian and other Cyrillic layouts (including right Alt + letter for Latin letters), and Ctrl or Meta shortcuts such as Ctrl+Space, Ctrl+C and Ctrl+V.
+A keyboard app sees hardware key events before the text field does, so this fork provides the Alt combinations itself. It only acts on right Alt combinations from real physical keyboards, and only when the current layout gives Latin letters. Everything else passes through unchanged: left Alt combinations, Russian and other Cyrillic layouts (including right Alt + letter for Latin letters), and Ctrl or Meta shortcuts such as Ctrl+Space, Ctrl+C and Ctrl+V.
 
 It asks for no new permissions (no internet access) and installs alongside the original Hacker's Keyboard.
 
 ## Key combinations
 
-"Alt" means either Alt key.
+"Alt" means the **right** Alt key. Left Alt never types accents; it works as a normal shortcut modifier.
 
 | Combination | Result |
 |---|---|
@@ -32,12 +32,12 @@ After a dead key:
 - **Space** gives the accent on its own: ¨.
 - **Another dead key** gives the first accent on its own and waits for a letter for the new one.
 - **Backspace or Esc** cancels the accent.
-- **Enter, Tab, arrows, other non-character keys and Ctrl or Meta shortcuts** give the accent on its own, then do what they normally do.
+- **Enter, Tab, arrows, other non-character keys and Ctrl, Meta or left Alt shortcuts** give the accent on its own, then do what they normally do.
 - **Shift, Alt, Ctrl or Caps Lock** pressed alone keep the accent waiting.
 
 Shift makes no difference for Alt+U, Alt+E, Alt+I and Alt+N. Alt+Shift+S and Alt+6 are left unchanged.
 
-In terminal apps, the combinations above type accents, so they no longer work as Alt shortcuts there (such as readline's Alt+U and Alt+C). Other Alt combinations are unchanged.
+In terminal apps, use left Alt for Alt shortcuts (such as readline's Alt+U and Alt+C); right Alt with the keys above types accents.
 
 ## Installation
 
@@ -59,8 +59,9 @@ Repeat this for every keyboard you pair.
 
 Open the [key event viewer](https://w3c.github.io/uievents/tools/key-event-viewer.html) in Chrome, tap its input field and type on the physical keyboard. It lists the key events and the text that reaches the field. Then check:
 
-- Alt+U then a, o, u, Shift+A → ä, ö, ü, Ä; Alt+S → ß; Alt+Shift+C → Ç.
-- Alt+E then x → ´x; Alt+U then Space → ¨.
+- Right Alt+U then a, o, u, Shift+A → ä, ö, ü, Ä; right Alt+S → ß; right Alt+Shift+C → Ç.
+- Right Alt+E then x → ´x; right Alt+U then Space → ¨.
+- Left Alt+U, left Alt+S: no accent, the app gets them as before.
 - Russian layout: Cyrillic typing is unchanged, and right Alt + letter still types Latin.
 - Ctrl+Space switches layouts; Ctrl+C, Ctrl+V and other shortcuts work.
 - The on-screen keyboard works as before, including suggestions.
