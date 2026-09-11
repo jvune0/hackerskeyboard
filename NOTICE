@@ -1,0 +1,17 @@
+Hacker's Keyboard (Dead Keys)
+
+This is a modified version of Hacker's Keyboard
+(https://github.com/klausw/hackerskeyboard), which is based on the Android
+Open Source Project keyboard. The original work and this modified version are
+licensed under the Apache License, Version 2.0; see LICENSE.
+
+Modifications made in this fork (2026):
+
+- Build updated for current tooling: Gradle 9 wrapper, Android Gradle
+  Plugin 9, compileSdk 36, minSdk 21, current NDK and CMake. GitHub Actions CI.
+- Alt-based dead keys (diaeresis, acute, circumflex, tilde, grave) and ç/ß for
+  physical keyboards: new DeadKeyHandler class, hooked into LatinIME key
+  handling.
+- Application ID changed to org.pocketworkstation.pckeyboard.deadkeys, app
+  name changed to "Hacker's Keyboard (Dead Keys)", and custom intent actions
+  renamed, so it can be installed alongside the original.
