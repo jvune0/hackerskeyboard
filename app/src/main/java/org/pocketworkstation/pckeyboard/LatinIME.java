@@ -53,6 +53,7 @@ import android.util.Log;
 import android.util.PrintWriterPrinter;
 import android.util.Printer;
 import android.view.HapticFeedbackConstants;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -276,6 +277,9 @@ public class LatinIME extends InputMethodService implements
     // reverting
     private CharSequence mEnteredText;
     private boolean mRefreshKeyboardRequired;
+
+    // Alt dead keys for hardware keyboards
+    private final DeadKeyHandler mDeadKeyHandler = new DeadKeyHandler();
 
     // For each word, a list of potential replacements, usually from voice.
     private Map<String, List<CharSequence>> mWordToSuggestions = new HashMap<String, List<CharSequence>>();
@@ -946,8 +950,15 @@ public class LatinIME extends InputMethodService implements
     }
 
     @Override
+    public void onStartInput(EditorInfo attribute, boolean restarting) {
+        super.onStartInput(attribute, restarting);
+        mDeadKeyHandler.reset();
+    }
+
+    @Override
     public void onFinishInput() {
         super.onFinishInput();
+        mDeadKeyHandler.reset();
 
         onAutoCompletionStateChanged(false);
 
@@ -1196,6 +1207,15 @@ public class LatinIME extends InputMethodService implements
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (isPhysicalKeyboardEvent(event)) {
+            int metaWithoutAlt = event.getMetaState() & ~KeyEvent.META_ALT_MASK;
+            DeadKeyHandler.Result result = mDeadKeyHandler.onKeyDown(keyCode,
+                    event.getUnicodeChar(0), event.getUnicodeChar(metaWithoutAlt),
+                    deadKeyModifiers(event), event.getRepeatCount());
+            if (applyDeadKeyResult(result)) {
+                return true;
+            }
+        }
         switch (keyCode) {
         case KeyEvent.KEYCODE_BACK:
             if (event.getRepeatCount() == 0
@@ -1221,6 +1241,10 @@ public class LatinIME extends InputMethodService implements
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (isPhysicalKeyboardEvent(event) && mDeadKeyHandler.onKeyUp(keyCode).action
+                == DeadKeyHandler.Result.Action.CONSUME) {
+            return true;
+        }
         switch (keyCode) {
         case KeyEvent.KEYCODE_DPAD_DOWN:
         case KeyEvent.KEYCODE_DPAD_UP:
@@ -1253,6 +1277,58 @@ public class LatinIME extends InputMethodService implements
             break;
         }
         return super.onKeyUp(keyCode, event);
+    }
+
+    /** Key events from a physical keyboard; only these go to the dead-key handler. */
+    private static boolean isPhysicalKeyboardEvent(KeyEvent event) {
+        if ((event.getSource() & InputDevice.SOURCE_KEYBOARD) == 0) {
+            return false;
+        }
+        InputDevice device = InputDevice.getDevice(event.getDeviceId());
+        return device != null && !device.isVirtual();
+    }
+
+    private static int deadKeyModifiers(KeyEvent event) {
+        int modifiers = 0;
+        if (event.isShiftPressed()) modifiers |= DeadKeyHandler.MOD_SHIFT;
+        if (event.isAltPressed()) modifiers |= DeadKeyHandler.MOD_ALT;
+        if (event.isCtrlPressed()) modifiers |= DeadKeyHandler.MOD_CTRL;
+        if (event.isMetaPressed()) modifiers |= DeadKeyHandler.MOD_META;
+        return modifiers;
+    }
+
+    /** Commits the result's text, if any; returns true if the key event is consumed. */
+    private boolean applyDeadKeyResult(DeadKeyHandler.Result result) {
+        switch (result.action) {
+        case COMMIT:
+            commitDeadKeyText(result.text);
+            return true;
+        case COMMIT_THEN_PASS:
+            commitDeadKeyText(result.text);
+            return false;
+        case CONSUME:
+            return true;
+        default:
+            return false;
+        }
+    }
+
+    /** Commits text like onText(), finishing any word in progress first. */
+    private void commitDeadKeyText(String text) {
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null)
+            return;
+        abortCorrection(false);
+        ic.beginBatchEdit();
+        if (mPredicting) {
+            commitTyped(ic, true);
+        }
+        ic.commitText(text, 1);
+        ic.endBatchEdit();
+        updateShiftKeyState(getCurrentInputEditorInfo());
+        mJustRevertedSeparator = null;
+        mJustAddedAutoSpace = false;
+        mEnteredText = null;
     }
 
     private void reloadKeyboards() {
